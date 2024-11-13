@@ -1,0 +1,28 @@
+services:
+  iris:
+    build: ./
+    hostname: iris
+    command: --ISCAgent false --monitorCPF false
+    ports:
+    - "8889:8889"
+    volumes:
+    - ./UserCPF:/home/irisowner/cpf
+    - ./:/home/irisowner/host
+    environment:
+    - TZ=JST-9
+    - ISC_CPF_MERGE_FILE=/home/irisowner/cpf/merge.cpf
+
+  webgateway:
+    image: containers.intersystems.com/intersystems/webgateway:2024.1
+    init: true
+    container_name: webgateway
+    hostname: webgateway
+    ports:
+    - "8882:80"
+    environment:
+    - ISC_CSP_CONF_FILE=/webgateway-shared/CSP.conf
+    - ISC_CSP_INI_FILE=/webgateway-shared/CSP.ini
+    volumes:
+    - type: bind
+      source: ./webgateway
+      target: /webgateway-shared
