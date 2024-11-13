@@ -1,6 +1,6 @@
 # iris-okta-oidc-wsgi
 
-[以前](https://jp.community.intersystems.com/node/540316)、Azure用にOAouth2クライアントをセットアップする記事を書いた時に思ったのですが、各IdPはサンプルコードとしてPythonコードや専用のモジュールを提供しているので、それがそのまま使用できれば~~楽~~安全でいいなと思いました。
+[以前](https://jp.community.intersystems.com/node/540316)、Azure用にOAouth2クライアントをセットアップする記事を書いた時に思ったのですが、各IdPはサンプルコードとしてPythonコードや専用のモジュールを提供しているので、それがそのまま使用できれば効率が良いのにな、と思いました。
 
 IRISが埋め込みPython機能としてWSGIをサポートしたことにより、これが簡単に実現しそうなので、その方法をご紹介したいと思います。
 
@@ -10,7 +10,7 @@ IRISが埋め込みPython機能としてWSGIをサポートしたことにより
 
 ## OKTAでの設定内容
 
-参考までに、今回使用した環境は最後に記載しています。
+参考までに、今回使用した環境を後半に記載しています。
 
 ## アプリケーションの起動
 
@@ -28,8 +28,8 @@ AUTH0_CLIENT_ID="0oaxxxxxxx"
 AUTH0_CLIENT_SECRET="qUudxxxxxxxxxxx"
 AUTH0_DOMAIN="dev-xxxxx.okta.com/oauth2/default"
 ```
-> AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRETは巻末の「アプリケーション追加」で使用する画面から取得できます。
-> AUTH0_DOMAINは、巻末の「カスタムSCOPE追加」で使用する画面から取得できる発行者URIを設定します。
+> AUTH0_CLIENT_ID,AUTH0_CLIENT_SECRETは後述の「アプリケーション追加」で使用する画面から取得できます。
+> AUTH0_DOMAINは、後述の「カスタムSCOPE追加」で使用する画面から取得できる発行者URIを設定します。
 
 ```
 docker compose build
@@ -38,7 +38,8 @@ docker compose up -d
 
 下記でIRISの管理ポータルにアクセスできます。
 
-> http://localhost:8882/csp/sys/%25CSP.Portal.Home.zen
+> http://localhost:8882/csp/sys/%25CSP.Portal.Home.zen  
+> ユーザ名:SuperUser, パスワード:SYS
 
 ## WSGI環境での実行
 まずは、純粋なWSGI環境での実行を行って、設定が正しくできているかを確認します。コードは[こちら](https://github.com/auth0-samples/auth0-python-web-app/tree/master/01-Login)を使用しました。
@@ -97,17 +98,13 @@ namespace: USER
 
 ## IRIS+WSGI環境での実行
 
-ブラウザで[メインページ](http://localhost:8882/csp/sys/wsgi/app/)にアクセスしてください。
-初めにユーザ名、パスワードを聞かれますが、これはIRISの
-以降の操作は同じです。
+ブラウザで[IRIS+WSGI用のメインページ](http://localhost:8882/csp/sys/wsgi/app/)にアクセスしてください。以降の操作は同じです。
 
 > 同じFlask用のコードを使用していますので、全く同じ動作になります。
 
 ## 何が可能になったのか
 
-これは「IRIS+WSGIで何が可能になるか？」という問いと同じです。
-
-本トピックに限定すると、例えばbearer tokenであるアクセストークンを、cookie(flaskのsessionの仕組み)ではなく、IRISのDB上に保存する、他のCSP/RESTアプリケーションに渡す、という応用が考えられます。
+これは「IRIS+WSGIで何が可能になるか？」という問いと同じですが、本トピックに限定すると、例えばbearer tokenであるアクセストークンを、cookie(flaskのsessionの仕組み)ではなく、IRISのDB上に保存する、他のCSP/RESTアプリケーションに渡す、という応用が考えられます。
 
 元々、CSPやIRISのRESTで作成したアプリケーションがあって、そこにIdP発行のアクセストークンを渡したい、といった用法に向いているアプローチかと思います。
 
